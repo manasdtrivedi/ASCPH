@@ -1,3 +1,8 @@
+import java.sql.*;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.table.*;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,12 +14,87 @@
  * @author Manas Trivedi
  */
 public class ASCPH extends javax.swing.JFrame {
-
+    String sql = null;
+    Connection con = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    DefaultTableModel tm1 = null;
+    String currentPatientID = null;
     /**
      * Creates new form ASCPH
      */
     public ASCPH() {
         initComponents();
+        tm1 = (DefaultTableModel)jTable1.getModel();
+        jTable1.removeColumn(jTable1.getColumnModel().getColumn(0));
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/ASCPH", "root", "1234");
+            stmt = con.createStatement();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "The following error occurred:\n" + e.getMessage());
+        }
+    }
+    
+    public void findHospitals(String searchQuery){
+        try{
+            if(searchQuery.equals("")){
+                sql = "SELECT HospitalID, Name, Location FROM Hospital;";
+            }
+            else{
+                sql = "SELECT HospitalID, Name, Location FROM Hospital WHERE UPPER(Name) LIKE UPPER('%" + searchQuery + "%');";
+            }
+            System.out.println(sql);
+            rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                tm1.addRow(new Object [] {rs.getInt("HospitalID"), rs.getString("Name"), rs.getString("Location")});
+            }
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "The following error occurred:\n" + e.getMessage());
+        }
+    }
+    
+    public void viewHospitalDetails(int HospitalID){
+        hospitalIDLabel.setVisible(false);
+        hospitalDetailsFrame.setVisible(true);
+        try{
+            sql = "SELECT * FROM Hospital WHERE HospitalID = '" + HospitalID + "';";
+            rs = stmt.executeQuery(sql);
+            rs.first();
+            hospitalIDLabel.setText("" + rs.getInt("HospitalID"));
+            hospitalNameLabel.setText(rs.getString("Name"));
+            hospitalLocationLabel.setText(rs.getString("Location"));
+            hospitalFacilitiesTextArea.setText(rs.getString("Facilities"));
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "The following error occurred:\n" + e.getMessage());
+        }
+    }
+    
+    public void createAccount(){
+        JTextField usernameTextField = new JTextField();
+        JTextField nameTextField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JTextField ageTextField = new JTextField();
+        JTextField genderTextField = new JTextField();
+        Object[] fields = {
+            "Enter username:", usernameTextField,
+            "Enter name:", nameTextField,
+            "Enter password:", passwordField,
+            "Enter age:", ageTextField,
+            "Enter gender:", genderTextField,
+        };
+        JOptionPane.showConfirmDialog(null, fields, "Create Patient Account", JOptionPane.OK_CANCEL_OPTION);
+        try{
+            sql = "INSERT INTO Patient VALUES('" + usernameTextField.getText() + "', '" + nameTextField.getText() + "', '" + new String(passwordField.getPassword()) + "', '" + Integer.parseInt(ageTextField.getText()) + "', '" + genderTextField.getText() + "');";
+            stmt.executeUpdate(sql);
+            JOptionPane.showMessageDialog(null, "Account created successfully!");
+            currentPatientID = usernameTextField.getText();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "The following error occurred:\n" + e.getMessage());
+        }
     }
 
     /**
@@ -26,56 +106,326 @@ public class ASCPH extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        hospitalDetailsFrame = new javax.swing.JFrame();
         jLabel1 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        hospitalNameLabel = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        hospitalLocationLabel = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        hospitalFacilitiesTextArea = new javax.swing.JTextArea();
+        hospitalIDLabel = new javax.swing.JLabel();
+        jButton5 = new javax.swing.JButton();
+        createPatientAccountFrame = new javax.swing.JFrame();
+        hospitalEndFrame = new javax.swing.JFrame();
+        hospitalUserIDLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        createPatientAccountButton = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+
+        hospitalDetailsFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        hospitalDetailsFrame.setMinimumSize(new java.awt.Dimension(1000, 750));
+
+        jLabel1.setText("Hospital Details");
+
+        jButton3.setText("Book Appointment");
+
+        jLabel2.setText("Name:");
+
+        hospitalNameLabel.setText("<Hospital Name>");
+
+        jLabel6.setText("Location:");
+
+        hospitalLocationLabel.setText("<Hospital Location>");
+
+        jLabel8.setText("Facilities:");
+
+        hospitalFacilitiesTextArea.setEditable(false);
+        hospitalFacilitiesTextArea.setColumns(20);
+        hospitalFacilitiesTextArea.setLineWrap(true);
+        hospitalFacilitiesTextArea.setRows(5);
+        hospitalFacilitiesTextArea.setWrapStyleWord(true);
+        jScrollPane2.setViewportView(hospitalFacilitiesTextArea);
+
+        hospitalIDLabel.setText("<Hospital ID>");
+
+        jButton5.setText("Back");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout hospitalDetailsFrameLayout = new javax.swing.GroupLayout(hospitalDetailsFrame.getContentPane());
+        hospitalDetailsFrame.getContentPane().setLayout(hospitalDetailsFrameLayout);
+        hospitalDetailsFrameLayout.setHorizontalGroup(
+            hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, hospitalDetailsFrameLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(hospitalIDLabel)
+                .addGap(37, 37, 37))
+            .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel6))
+                        .addGap(18, 18, 18)
+                        .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(hospitalLocationLabel)
+                            .addComponent(hospitalNameLabel)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jButton3))))
+                    .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                        .addComponent(jButton5)
+                        .addGap(363, 363, 363)
+                        .addComponent(jLabel1)))
+                .addContainerGap(491, Short.MAX_VALUE))
+        );
+        hospitalDetailsFrameLayout.setVerticalGroup(
+            hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(hospitalDetailsFrameLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addComponent(jButton5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(hospitalIDLabel)
+                .addGap(8, 8, 8)
+                .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(hospitalNameLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(hospitalLocationLabel))
+                .addGap(18, 18, 18)
+                .addGroup(hospitalDetailsFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jButton3)
+                .addContainerGap(488, Short.MAX_VALUE))
+        );
+
+        createPatientAccountFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        createPatientAccountFrame.setMinimumSize(new java.awt.Dimension(1000, 750));
+
+        javax.swing.GroupLayout createPatientAccountFrameLayout = new javax.swing.GroupLayout(createPatientAccountFrame.getContentPane());
+        createPatientAccountFrame.getContentPane().setLayout(createPatientAccountFrameLayout);
+        createPatientAccountFrameLayout.setHorizontalGroup(
+            createPatientAccountFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1000, Short.MAX_VALUE)
+        );
+        createPatientAccountFrameLayout.setVerticalGroup(
+            createPatientAccountFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 750, Short.MAX_VALUE)
+        );
+
+        hospitalEndFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        hospitalEndFrame.setMinimumSize(new java.awt.Dimension(1000, 750));
+
+        hospitalUserIDLabel.setText("<Hospital ID>");
+
+        javax.swing.GroupLayout hospitalEndFrameLayout = new javax.swing.GroupLayout(hospitalEndFrame.getContentPane());
+        hospitalEndFrame.getContentPane().setLayout(hospitalEndFrameLayout);
+        hospitalEndFrameLayout.setHorizontalGroup(
+            hospitalEndFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, hospitalEndFrameLayout.createSequentialGroup()
+                .addContainerGap(857, Short.MAX_VALUE)
+                .addComponent(hospitalUserIDLabel)
+                .addGap(64, 64, 64))
+        );
+        hospitalEndFrameLayout.setVerticalGroup(
+            hospitalEndFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(hospitalEndFrameLayout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addComponent(hospitalUserIDLabel)
+                .addContainerGap(700, Short.MAX_VALUE))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowActivated(java.awt.event.WindowEvent evt) {
+                formWindowActivated(evt);
+            }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
-        jLabel1.setText("An Automated System To Connect Patients and Hospitals");
+        jLabel3.setText("Demo: An Automated System to Connect Patients and Hospitals");
 
-        jLabel2.setText("Demo");
+        jLabel4.setText("Enter hospital name:");
 
-        jButton1.setText("Patient");
+        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField1KeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jTextField1KeyTyped(evt);
+            }
+        });
 
-        jButton2.setText("Hospital Executive");
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "HospitalID", "Name", "Area"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
+
+        createPatientAccountButton.setText("Create Patient Account");
+        createPatientAccountButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createPatientAccountButtonActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Hospital Executive Login");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Patient Login");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(103, 103, 103)
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(95, Short.MAX_VALUE)
+                .addContainerGap(159, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(139, 139, 139)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton2))
-                        .addComponent(jLabel1)))
-                .addGap(92, 92, 92))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 683, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(142, 142, 142))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(188, 188, 188)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                            .addComponent(createPatientAccountButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addComponent(jLabel2)
-                .addGap(33, 33, 33)
-                .addComponent(jLabel1)
-                .addGap(72, 72, 72)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addComponent(jLabel3))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(createPatientAccountButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton4)
+                .addGap(87, 87, 87)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap(97, Short.MAX_VALUE))
+                    .addComponent(jLabel4)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(29, 29, 29)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(115, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
+
+    }//GEN-LAST:event_formWindowActivated
+
+    private void jTextField1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyTyped
+        
+    }//GEN-LAST:event_jTextField1KeyTyped
+
+    private void jTextField1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyReleased
+        tm1.setRowCount(0);
+        findHospitals(jTextField1.getText());
+    }//GEN-LAST:event_jTextField1KeyReleased
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+        int hospitalID = (int)tm1.getValueAt(jTable1.getSelectedRow(), 0);
+        this.dispose();
+        viewHospitalDetails(hospitalID);
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        hospitalDetailsFrame.dispose();
+        this.setVisible(true);
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        findHospitals("");
+    }//GEN-LAST:event_formWindowOpened
+
+    private void createPatientAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPatientAccountButtonActionPerformed
+        createAccount();
+    }//GEN-LAST:event_createPatientAccountButtonActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        JTextField hospitalIDTextField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        Object[] fields = {
+            "Enter username:", hospitalIDTextField,
+            "Enter password:", passwordField,
+        };
+        JOptionPane.showConfirmDialog(null, fields, "Hospital Executive Login", JOptionPane.OK_CANCEL_OPTION);
+        try{
+            sql = "SELECT * FROM Hospital WHERE HospitalID = '" + hospitalIDTextField.getText() + "' && Password = '" + new String(passwordField.getPassword()) + "';";
+            rs = stmt.executeQuery(sql);
+            if(rs.next()){
+                hospitalUserIDLabel.setVisible(false);
+                hospitalUserIDLabel.setText(hospitalIDTextField.getText());
+                this.dispose();
+                hospitalEndFrame.setVisible(true);   
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Incorrect username password combination.\nPlease try again.");
+            }
+        }
+        catch(Exception e){
+            
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -113,9 +463,28 @@ public class ASCPH extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton createPatientAccountButton;
+    private javax.swing.JFrame createPatientAccountFrame;
+    private javax.swing.JFrame hospitalDetailsFrame;
+    private javax.swing.JFrame hospitalEndFrame;
+    private javax.swing.JTextArea hospitalFacilitiesTextArea;
+    private javax.swing.JLabel hospitalIDLabel;
+    private javax.swing.JLabel hospitalLocationLabel;
+    private javax.swing.JLabel hospitalNameLabel;
+    private javax.swing.JLabel hospitalUserIDLabel;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
